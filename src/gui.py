@@ -10,6 +10,7 @@ WHITE = (255, 255, 255)
 GRAY = (192, 192, 192)
 BLACK = (0, 0, 0)
 TRAP_COLOR = (255, 0, 0)
+HIGHLIGHT_COLOR = (0, 255, 0)  # Color para resaltar celdas seleccionadas
 
 class GUI:
     def __init__(self):
@@ -18,7 +19,7 @@ class GUI:
         pygame.display.set_caption("Arimaa")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.images = load_images(cell_size=CELL_SIZE-20)
+        self.images = load_images(cell_size=CELL_SIZE - 20)
         if not self.images:
             print("No se pudieron cargar las imágenes.")
 
@@ -80,18 +81,51 @@ class GUI:
     
     def run(self, board):
         """Ciclo principal de la GUI."""
+        selected_piece = None  # Inicializa la pieza seleccionada
+        selected_position = None
+
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Botón izquierdo del mouse
+                        if selected_piece is None:
+                            # Intentar seleccionar una ficha
+                            piece, position = self.get_selected_piece(board)
+                            if piece:
+                                selected_piece = piece
+                                selected_position = position
+                                print(f"Pieza seleccionada: {selected_piece} en {selected_position}")
+                            else:
+                                print("No se seleccionó una ficha válida.")
+                        else:
+                            # Seleccionar una casilla de destino
+                            destination, destination_position = self.get_selected_piece(board)
+                            if destination_position:  # Si se selecciona una casilla dentro del tablero
+                                print(f"Destino seleccionado: {destination_position}")
+                                # Aquí puedes manejar el movimiento o cualquier lógica adicional
+                                # Reiniciar la selección después del movimiento
+                            selected_piece = None
+                            selected_position = None
 
             self.screen.fill(BLACK)
             self.draw_board(board)
             self.draw_pieces(board)
+
+            if selected_position:
+                # Resalta la celda seleccionada
+                row, col = selected_position
+                pygame.draw.rect(
+                    self.screen, HIGHLIGHT_COLOR, 
+                    (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE), 
+                    3  # Grosor del borde
+                )
+
             pygame.display.flip()
             self.clock.tick(30)  # 30 FPS
 
-        pygame.quit()
+    pygame.quit()
 
     def update(self):
         """Actualiza la pantalla."""
@@ -102,13 +136,13 @@ class GUI:
         return pygame.event.get()
 
     def get_selected_piece(self, board):
-        """Obtiene la pieza seleccionada según el clic del jugador."""
         x, y = pygame.mouse.get_pos()
         row, col = y // CELL_SIZE, x // CELL_SIZE
+
+        # Verificar si las coordenadas están dentro de los límites del tablero
         if 0 <= row < BOARD_SIZE and 0 <= col < BOARD_SIZE:
             piece = board.grid[row][col]
-            print(f"Selected piece at (row: {row}, col: {col}): {piece}")  # Mensaje de depuración
+            print(f"Piece at selected position: {piece}")
             return piece, (row, col)
         else:
-            print(f"Clicked outside the board at (row: {row}, col: {col})")  # Mensaje de depuración
             return None, None

@@ -39,6 +39,13 @@ class Board:
         self.grid[pos[0]][pos[1]] = None
         print(f"Removed piece at {pos}")  # Mensaje de depuración
 
+    def copy(self):
+        """Crea una copia del tablero."""
+        new_board = Board()
+        new_board.grid = [[piece for piece in row] for row in self.grid]
+        new_board.traps = self.traps[:]
+        return new_board
+
     def display(self):
         """Muestra el tablero en consola."""
         print("  " + " ".join("ABCDEFGH"))  # Etiquetas de columnas
