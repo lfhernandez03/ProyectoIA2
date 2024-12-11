@@ -1,3 +1,5 @@
+import random
+
 class Minimax:
     def __init__(self, rules):
         self.rules = rules
@@ -13,7 +15,7 @@ class Minimax:
         Returns:
             tuple: El mejor movimiento ((inicio_fila, inicio_col), (destino_fila, destino_col)).
         """
-        _, best_move = self.minimax(board, depth=1, alpha=float("-inf"), beta=float("inf"), maximizing_player=(player == "P1"))
+        _, best_move = self.minimax(board, depth=2, alpha=float("-inf"), beta=float("inf"), maximizing_player=(player == "P1"))
         return best_move
 
     def minimax(self, board, depth, alpha, beta, maximizing_player):
@@ -31,55 +33,81 @@ class Minimax:
             tuple: (valor, mejor movimiento).
         """
         if depth == 0 or self.rules.is_game_over():
-            return self.evaluate_board(board), None
+            eval_score = self.evaluate_board(board)
+            print(f"Evaluating board at depth {depth}: {eval_score}")
+            return eval_score, None
 
         if maximizing_player:
             max_eval = float("-inf")
-            best_move = None
-            for move in self.generate_moves(board, "P1"):
+            best_moves = []
+            for move in self.generate_moves(board, "P2"):
                 new_board = board.copy()
                 new_board.move_piece(*move)
                 eval, _ = self.minimax(new_board, depth - 1, alpha, beta, False)
+                print(f"Move {move} evaluated as {eval}")
                 if eval > max_eval:
                     max_eval = eval
-                    best_move = move
+                    best_moves = [move]
+                elif eval == max_eval:
+                    best_moves.append(move)
                 alpha = max(alpha, eval)
                 if beta <= alpha:
                     break
-            return max_eval, best_move
+            return max_eval, random.choice(best_moves) if best_moves else None
         else:
             min_eval = float("inf")
-            best_move = None
+            best_moves = []
             for move in self.generate_moves(board, "P2"):
                 new_board = board.copy()
                 new_board.move_piece(*move)
                 eval, _ = self.minimax(new_board, depth - 1, alpha, beta, True)
+                print(f"Move {move} evaluated as {eval}")
                 if eval < min_eval:
                     min_eval = eval
-                    best_move = move
+                    best_moves = [move]
+                elif eval == min_eval:
+                    best_moves.append(move)
                 beta = min(beta, eval)
                 if beta <= alpha:
                     break
-            return min_eval, best_move
+            return min_eval, random.choice(best_moves) if best_moves else None
 
     def evaluate_board(self, board):
         """
-        Evalúa el tablero para determinar qué jugador está en ventaja.
-
-        Args:
-            board (Board): El tablero a evaluar.
-
+        Evalúa el tablero para un jugador en particular, asignando valor a las piezas 
+        y las posiciones estratégicas.
+    
+        board: El tablero de juego.
+    
         Returns:
-            int: Puntuación del tablero. Positivo para ventaja de player1, negativo para player2.
+            int: Valor del tablero según la evaluación.
         """
         score = 0
-        for row in board.grid:
-            for piece in row:
-                if piece:
-                    if piece.player == "P1":
-                        score += self.piece_value(piece)
-                    else:
-                        score -= self.piece_value(piece)
+
+        for row in range(8):  # Asumimos un tablero 8x8
+            for col in range(8):
+                piece = board.grid[row][col]  # Acceder correctamente a la celda del tablero
+
+                if piece is not None:
+                    piece_value = self.piece_value(piece)
+
+                    # Agregar el valor de la pieza según su tipo
+                    score += piece_value
+
+                    # Evaluación de la posición de la pieza
+                    if piece.name == 'R':  # Conejo
+                        # Prioriza los conejos cercanos a la meta
+                        if piece.player == "P1":
+                            score += 10 * (7 - row)  # Mientras más cerca del final, mayor valor
+                        else:
+                            score += 10 * row  # Oponente cerca de su meta
+
+                    elif piece.name == 'E':  # Elefante
+                        # Prioriza elefantes en posiciones centrales o bloqueando el camino
+                        if piece.player == "P1":
+                            score += 5 * (4 - abs(3 - row))  # Cerca del centro del tablero
+                        else:
+                            score += 5 * abs(3 - row)  # Oponente en posición menos favorable
         return score
 
     def piece_value(self, piece):
@@ -111,9 +139,9 @@ class Minimax:
             for col in range(board.size):
                 piece = board.grid[row][col]
                 if piece and piece.player == player:
-                    # Generar movimientos posibles para la pieza
-                    for d_row, d_col in [(-1, 0), (1, 0), (0, -1), (0, 1)]:  # Movimientos posibles (arriba, abajo, izquierda, derecha)
+                    for d_row, d_col in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                         new_row, new_col = row + d_row, col + d_col
                         if 0 <= new_row < board.size and 0 <= new_col < board.size and board.grid[new_row][new_col] is None:
                             moves.append(((row, col), (new_row, new_col)))
+        print(f"Generated moves for {player}: {moves}")
         return moves
