@@ -19,9 +19,10 @@ class Piece:
         """
         values = {
             "R": 1,  # Conejo
+            "G": 2,  # Gato
             "C": 3,  # Camello
-            "H": 5,  # Caballo
-            "D": 7,  # Elefante
-            "E": 9   # Elefante (especial)
+            "H": 4,  # Caballo
+            "D": 5,  # Perro
+            "E": 6   # Elefante
         }
         return values.get(self.name, 0)  # Devuelve 0 si el nombre no es válido

@@ -26,6 +26,8 @@ def load_images(images_path="assets/images", cell_size=80):
             "D2": pygame.image.load(os.path.join(images_path, "perro2.png")),
             "R1": pygame.image.load(os.path.join(images_path, "conejo1.png")),
             "R2": pygame.image.load(os.path.join(images_path, "conejo2.png")),
+            "G1": pygame.image.load(os.path.join(images_path, "gato1.png")),
+            "G2": pygame.image.load(os.path.join(images_path, "gato2.png")),
         }
 
         # Escalar las imágenes al tamaño de las celdas

@@ -2,10 +2,9 @@ class Rules:
     def __init__(self, board):
         self.board = board
 
-    def is_valid_move(self, piece, start_pos, destination_pos):
-        """Verifica si el movimiento es válido."""
+    def can_move(self, start_pos, end_pos):
         start_row, start_col = start_pos
-        end_row, end_col = destination_pos
+        end_row, end_col = end_pos
 
         # Verifica que el destino esté dentro del tablero
         if not (0 <= end_row < self.board.size and 0 <= end_col < self.board.size):
@@ -20,6 +19,66 @@ class Rules:
             return False
 
         return True
+
+    def can_push(self, start_pos, end_pos):
+        """Verifica si una pieza puede empujar a otra."""
+        start_row, start_col = start_pos
+        end_row, end_col = end_pos
+
+        # Verifica que el destino esté dentro del tablero
+        if not (0 <= end_row < self.board.size and 0 <= end_col < self.board.size):
+            return False
+
+        # Verifica que el destino esté vacío
+        if self.board.grid[end_row][end_col] is not None:
+            return False
+
+        # Verifica que el movimiento sea a una celda adyacente
+        if abs(start_row - end_row) + abs(start_col - end_col) != 1:
+            return False
+
+        # Verifica que la pieza que empuja sea más fuerte
+        piece = self.board.grid[start_row][start_col]
+        target_piece = self.board.grid[end_row][end_col]
+        if piece and target_piece and piece.strength > target_piece.strength:
+            return True
+
+        return False
+
+    def can_pull(self, start_pos, end_pos):
+        """Verifica si una pieza puede tirar de otra."""
+        start_row, start_col = start_pos
+        end_row, end_col = end_pos
+
+        # Verifica que el destino esté dentro del tablero
+        if not (0 <= end_row < self.board.size and 0 <= end_col < self.board.size):
+            return False
+
+        # Verifica que el destino esté vacío
+        if self.board.grid[end_row][end_col] is not None:
+            return False
+
+        # Verifica que el movimiento sea a una celda adyacente
+        if abs(start_row - end_row) + abs(start_col - end_col) != 1:
+            return False
+
+        # Verifica que la pieza que tira sea más fuerte
+        piece = self.board.grid[start_row][start_col]
+        target_piece = self.board.grid[end_row][end_col]
+        if piece and target_piece and piece.strength > target_piece.strength:
+            return True
+
+        return False
+
+    def is_valid_move(self, piece, start_pos, end_pos):
+        """Verifica si un movimiento es válido."""
+        if self.can_move(start_pos, end_pos):
+            return True
+        if self.can_push(start_pos, end_pos):
+            return True
+        if self.can_pull(start_pos, end_pos):
+            return True
+        return False
 
     def is_trapped(self, piece, pos):
         """Verifica si una pieza está atrapada."""
@@ -38,7 +97,7 @@ class Rules:
             if self.board.grid[self.board.size - 1][col] and self.board.grid[self.board.size - 1][col].name == "R" and self.board.grid[self.board.size - 1][col].player == "P1":
                 print("Player 1 wins by reaching the opposite side with a rabbit.")  # Mensaje de depuración
                 return "P1"
-            if self.board.grid[self.board.size - 1][col] and self.board.grid[self.board.size - 1][col].name == "R" and self.board.grid[self.board.size - 1][col].player == "P2":
+            if self.board.grid[0][col] and self.board.grid[0][col].name == "R" and self.board.grid[0][col].player == "P2":
                 print("Player 2 wins by reaching the opposite side with a rabbit.")  # Mensaje de depuración
                 return "P2"
 
@@ -53,5 +112,4 @@ class Rules:
             print("Player 1 wins because Player 2 has no pieces left.")  # Mensaje de depuración
             return "P1"
 
-        # No hay ganador aún
         return None

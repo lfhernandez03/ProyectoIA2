@@ -120,7 +120,14 @@ class Minimax:
         Returns:
             int: Valor de la pieza.
         """
-        values = {"R": 1, "C": 3, "H": 5, "D": 7, "E": 9}
+        values = {
+            "R": 1,  # Conejo
+            "G": 2,  # Gato
+            "C": 3,  # Camello
+            "H": 4,  # Caballo
+            "D": 5,  # Perro
+            "E": 6   # Elefante
+        }
         return values.get(piece.name, 0)
 
     def generate_moves(self, board, player):

@@ -1,4 +1,5 @@
 from .pieces import Piece
+import random
 
 class Board:
     def __init__(self):
@@ -8,20 +9,26 @@ class Board:
         self.setup_pieces()
 
     def setup_pieces(self):
-        """Coloca las piezas iniciales de ambos jugadores."""
+        """Coloca las piezas iniciales de ambos jugadores de forma aleatoria."""
         # Piezas del Jugador 1 (P1)
-        self.grid[0] = [
-            Piece("E", "P1"), Piece("C", "P1"), Piece("H", "P1"), Piece("D", "P1"),
-            Piece("D", "P1"), Piece("H", "P1"), Piece("C", "P1"), Piece("E", "P1")
-        ]
-        self.grid[1] = [Piece("R", "P1") for _ in range(8)]  # Conejos del jugador 1
+        p1_pieces = [
+            Piece("E", "P1"), Piece("C", "P1"), Piece("H", "P1"), Piece("H", "P1"),
+            Piece("D", "P1"), Piece("D", "P1"), Piece("G", "P1"), Piece("G", "P1")
+        ] + [Piece("R", "P1") for _ in range(8)]  # Añadir 8 conejos
+        p1_positions = [(0, i) for i in range(8)] + [(1, i) for i in range(8)]
+        random.shuffle(p1_positions)
+        for pos, piece in zip(p1_positions, p1_pieces):
+            self.grid[pos[0]][pos[1]] = piece
 
         # Piezas del Jugador 2 (P2)
-        self.grid[7] = [
-            Piece("E", "P2"), Piece("C", "P2"), Piece("H", "P2"), Piece("D", "P2"),
-            Piece("D", "P2"), Piece("H", "P2"), Piece("C", "P2"), Piece("E", "P2")
-        ]
-        self.grid[6] = [Piece("R", "P2") for _ in range(8)]  # Conejos del jugador 2
+        p2_pieces = [
+            Piece("E", "P2"), Piece("C", "P2"), Piece("H", "P2"), Piece("H", "P2"),
+            Piece("D", "P2"), Piece("D", "P2"), Piece("G", "P2"), Piece("G", "P2")
+        ] + [Piece("R", "P2") for _ in range(8)]  # Añadir 8 conejos
+        p2_positions = [(6, i) for i in range(8)] + [(7, i) for i in range(8)]
+        random.shuffle(p2_positions)
+        for pos, piece in zip(p2_positions, p2_pieces):
+            self.grid[pos[0]][pos[1]] = piece
 
     def is_trap(self, row, col):
         """Verifica si la posición dada es una trampa."""
