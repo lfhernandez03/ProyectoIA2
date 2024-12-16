@@ -22,6 +22,14 @@ def main():
         start_pos = None
         steps_remaining = 4
 
+    def check_traps():
+        """Verifica y elimina piezas atrapadas en casillas trampa."""
+        for row in range(board.size):
+            for col in range(board.size):
+                piece = board.grid[row][col]
+                if piece and rules.is_trapped(piece, (row, col)):
+                    board.remove_piece((row, col))
+
     while True:
         gui.draw_board(board)  # Dibuja el tablero actual
         gui.draw_pieces(board)  # Dibuja las piezas en el tablero
@@ -36,32 +44,43 @@ def main():
             # Turno del jugador humano (P1)
             if current_player == "P1":
                 if event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = gui.get_mouse_position_on_board()  # Obtener la posición del ratón en el tablero
+                    row, col = pos
+
                     if selected_piece is None:
-                        # Seleccionar pieza
-                        selected_piece, start_pos = gui.get_selected_piece(board)
-                        if selected_piece and selected_piece.player != current_player:
-                            selected_piece = None
+                        # Seleccionar una pieza
+                        if board.grid[row][col] and board.grid[row][col].player == current_player:
+                            selected_piece = board.grid[row][col]
+                            start_pos = (row, col)
                     else:
-                        # Seleccionar destino y mover pieza
-                        destination_pos = gui.get_mouse_position_on_board()
-                        if rules.is_valid_move(selected_piece, start_pos, destination_pos):
-                            board.move_piece(start_pos, destination_pos)
-
-                            # Aplicar trampas y verificar victoria
-                            if rules.is_trapped(selected_piece, destination_pos):
-                                board.remove_piece(destination_pos)
-
-                            if rules.is_game_over():
-                                print(f"¡{current_player} gana!")
-                                return
-
+                        # Intentar mover la pieza seleccionada
+                        end_pos = (row, col)
+                        if rules.is_valid_move(selected_piece, start_pos, end_pos):
+                            if rules.can_move(start_pos, end_pos):
+                                board.move_piece(start_pos, end_pos)
+                            elif rules.can_push(start_pos, end_pos):
+                                push_pos = (end_pos[0] + (end_pos[0] - start_pos[0]), end_pos[1] + (end_pos[1] - start_pos[1]))
+                                if 0 <= push_pos[0] < board.size and 0 <= push_pos[1] < board.size and board.grid[push_pos[0]][push_pos[1]] is None:
+                                    rules.push_piece(start_pos, end_pos, push_pos)
+                            elif rules.can_pull(start_pos, end_pos):
+                                pull_pos = (start_pos[0] - (end_pos[0] - start_pos[0]), start_pos[1] - (end_pos[1] - start_pos[1]))
+                                if 0 <= pull_pos[0] < board.size and 0 <= pull_pos[1] < board.size and board.grid[pull_pos[0]][pull_pos[1]] is None:
+                                    rules.pull_piece(start_pos, end_pos, pull_pos)
                             steps_remaining -= 1
+
+                            # Verificar y eliminar piezas atrapadas en casillas trampa
+                            check_traps()
+
                             if steps_remaining == 0:
                                 current_player = "P2"
                                 reset_turn_variables()
                             else:
                                 selected_piece = None
                                 start_pos = None
+                                
+                            if rules.is_game_over():
+                                print(f"¡{current_player} gana!")
+                                return
                         else:
                             # Si el movimiento no es válido, deseleccionamos la pieza
                             selected_piece = None
@@ -73,12 +92,20 @@ def main():
                 best_move = minimax.get_best_move(board, current_player)
                 if best_move:
                     start_pos, destination_pos = best_move
-                    board.move_piece(start_pos, destination_pos)
+                    if rules.is_valid_move(board.grid[start_pos[0]][start_pos[1]], start_pos, destination_pos):
+                        if rules.can_move(start_pos, destination_pos):
+                            board.move_piece(start_pos, destination_pos)
+                        elif rules.can_push(start_pos, destination_pos):
+                            push_pos = (destination_pos[0] + (destination_pos[0] - start_pos[0]), destination_pos[1] + (destination_pos[1] - start_pos[1]))
+                            if 0 <= push_pos[0] < board.size and 0 <= push_pos[1] < board.size and board.grid[push_pos[0]][push_pos[1]] is None:
+                                rules.push_piece(start_pos, destination_pos, push_pos)
+                        elif rules.can_pull(start_pos, destination_pos):
+                            pull_pos = (start_pos[0] - (destination_pos[0] - start_pos[0]), start_pos[1] - (destination_pos[1] - start_pos[1]))
+                            if 0 <= pull_pos[0] < board.size and 0 <= pull_pos[1] < board.size and board.grid[pull_pos[0]][pull_pos[1]] is None:
+                                rules.pull_piece(start_pos, destination_pos, pull_pos)
 
-                    # Aplicar reglas de trampas
-                    selected_piece = board.grid[destination_pos[0]][destination_pos[1]]
-                    if rules.is_trapped(selected_piece, destination_pos):
-                        board.remove_piece(destination_pos)
+                        # Verificar y eliminar piezas atrapadas en casillas trampa
+                        check_traps()
 
                     if rules.is_game_over():
                         print(f"¡{current_player} gana!")
@@ -88,10 +115,9 @@ def main():
                     if steps_remaining == 0:
                         current_player = "P1"
                         reset_turn_variables()
-                else:
-                    # Si no hay movimientos válidos, termina el turno
-                    current_player = "P1"
-                    reset_turn_variables()
+
+                    # Añadir un retraso para hacer la animación de la IA más lenta
+                    pygame.time.delay(500)  # Retraso de 500 ms
 
         gui.clock.tick(30)  # Controlar FPS
 

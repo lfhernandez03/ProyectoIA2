@@ -64,3 +64,11 @@ class Board:
                 else:
                     row_str += str(cell) + " "
             print(row_str)
+            
+    def is_ally(self, pos, player):
+        """Verifica si la pieza en la posición dada es aliada."""
+        row, col = pos
+        if 0 <= row < self.size and 0 <= col < self.size:
+            piece = self.grid[row][col]
+            return piece is not None and piece.player == player
+        return False

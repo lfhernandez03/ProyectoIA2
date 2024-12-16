@@ -29,8 +29,8 @@ class Rules:
         if not (0 <= end_row < self.board.size and 0 <= end_col < self.board.size):
             return False
 
-        # Verifica que el destino esté vacío
-        if self.board.grid[end_row][end_col] is not None:
+        # Verifica que el destino esté ocupado por una pieza enemiga
+        if self.board.grid[end_row][end_col] is None or self.board.grid[start_row][start_col] is None or self.board.grid[end_row][end_col].player == self.board.grid[start_row][start_col].player:
             return False
 
         # Verifica que el movimiento sea a una celda adyacente
@@ -54,8 +54,8 @@ class Rules:
         if not (0 <= end_row < self.board.size and 0 <= end_col < self.board.size):
             return False
 
-        # Verifica que el destino esté vacío
-        if self.board.grid[end_row][end_col] is not None:
+        # Verifica que el destino esté ocupado por una pieza enemiga
+        if self.board.grid[end_row][end_col] is None or self.board.grid[start_row][start_col] is None or self.board.grid[end_row][end_col].player == self.board.grid[start_row][start_col].player:
             return False
 
         # Verifica que el movimiento sea a una celda adyacente
@@ -70,6 +70,18 @@ class Rules:
 
         return False
 
+    def push_piece(self, start_pos, end_pos, push_pos):
+        """Empuja una pieza enemiga a una nueva posición."""
+        self.board.grid[push_pos[0]][push_pos[1]] = self.board.grid[end_pos[0]][end_pos[1]]
+        self.board.grid[end_pos[0]][end_pos[1]] = self.board.grid[start_pos[0]][start_pos[1]]
+        self.board.grid[start_pos[0]][start_pos[1]] = None
+
+    def pull_piece(self, start_pos, end_pos, pull_pos):
+        """Tira de una pieza enemiga a una nueva posición."""
+        self.board.grid[pull_pos[0]][pull_pos[1]] = self.board.grid[start_pos[0]][start_pos[1]]
+        self.board.grid[start_pos[0]][start_pos[1]] = self.board.grid[end_pos[0]][end_pos[1]]
+        self.board.grid[end_pos[0]][end_pos[1]] = None
+
     def is_valid_move(self, piece, start_pos, end_pos):
         """Verifica si un movimiento es válido."""
         if self.can_move(start_pos, end_pos):
@@ -83,7 +95,13 @@ class Rules:
     def is_trapped(self, piece, pos):
         """Verifica si una pieza está atrapada."""
         row, col = pos
-        return self.board.is_trap(row, col)
+        if not self.board.is_trap(row, col):
+            return False
+        # Verifica si hay piezas aliadas adyacentes
+        for d_row, d_col in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            if self.board.is_ally((row + d_row, col + d_col), piece.player):
+                return False
+        return True
 
     def is_game_over(self):
         """
