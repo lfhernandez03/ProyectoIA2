@@ -41,7 +41,7 @@ class Rules:
         piece = self.board.grid[start_row][start_col]
         target_piece = self.board.grid[end_row][end_col]
         if piece and target_piece and piece.strength > target_piece.strength:
-            return True
+            return True 
 
         return False
 
@@ -71,16 +71,16 @@ class Rules:
         return False
 
     def push_piece(self, start_pos, end_pos, push_pos):
-        """Empuja una pieza enemiga a una nueva posición."""
-        self.board.grid[push_pos[0]][push_pos[1]] = self.board.grid[end_pos[0]][end_pos[1]]
-        self.board.grid[end_pos[0]][end_pos[1]] = self.board.grid[start_pos[0]][start_pos[1]]
-        self.board.grid[start_pos[0]][start_pos[1]] = None
+            """Empuja una pieza enemiga a una nueva posición."""
+            self.board.grid[push_pos[0]][push_pos[1]] = self.board.grid[end_pos[0]][end_pos[1]]
+            self.board.grid[end_pos[0]][end_pos[1]] = self.board.grid[start_pos[0]][start_pos[1]]
+            self.board.grid[start_pos[0]][start_pos[1]] = None
 
     def pull_piece(self, start_pos, end_pos, pull_pos):
-        """Tira de una pieza enemiga a una nueva posición."""
-        self.board.grid[pull_pos[0]][pull_pos[1]] = self.board.grid[start_pos[0]][start_pos[1]]
-        self.board.grid[start_pos[0]][start_pos[1]] = self.board.grid[end_pos[0]][end_pos[1]]
-        self.board.grid[end_pos[0]][end_pos[1]] = None
+            """Tira de una pieza enemiga a una nueva posición."""
+            self.board.grid[pull_pos[0]][pull_pos[1]] = self.board.grid[start_pos[0]][start_pos[1]]
+            self.board.grid[start_pos[0]][start_pos[1]] = self.board.grid[end_pos[0]][end_pos[1]]
+            self.board.grid[end_pos[0]][end_pos[1]] = None
 
     def is_valid_move(self, piece, start_pos, end_pos):
         """Verifica si un movimiento es válido."""

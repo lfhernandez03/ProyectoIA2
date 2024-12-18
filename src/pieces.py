@@ -6,6 +6,7 @@ class Piece:
         """
         self.name = name
         self.player = player
+        self.strength = self.piece_value()
 
     def __str__(self):
         return f"{self.name}{self.player[-1]}"
